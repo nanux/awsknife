@@ -1,4 +1,4 @@
-# AWS Tower
+# AWS Knife
 
 Swiss knife for tedious AWS tasks
 
@@ -14,7 +14,7 @@ Swiss knife for tedious AWS tasks
 When you have activated the `poetry` virtual environment, you can run:
 
 ```shell
-python tower.py --help
+python knife.py --help
 ```
 
 That will give you the commands and options that you can run. For all AWS operations you will need to be authenticated.
