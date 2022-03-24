@@ -4,11 +4,11 @@ import logging
 import boto3
 from botocore.config import Config
 
+from awstower.aws import get_regions
+
 log = logging.getLogger("eks")
 log.setLevel(level=logging.DEBUG)
 
-# there is a problem with the region due to missing IAM permissions
-blacklisted_regions = ["ap-northeast-3"]
 e2e_identifier = "e2etest"
 
 
@@ -16,22 +16,17 @@ def list_eks_clusters(e2e_only: bool = False):
     clusters = {}
 
     for region in get_regions():
-        region_name = region["RegionName"]
-
-        if region_name in blacklisted_regions:
-            log.debug(f"Skipping region {region_name}")
-            continue
-
-        eks_client = boto3.client('eks', config=Config(region_name=region_name))
+        
+        eks_client = boto3.client('eks', config=Config(region_name=region))
         region_clusters = eks_client.list_clusters()["clusters"]
 
-        log.debug(f"Region {region_name} has clusters: {region_clusters}")
+        log.debug(f"Region {region} has clusters: {region_clusters}")
 
         if e2e_only:
             region_clusters = [cluster for cluster in region_clusters if e2e_identifier in cluster]
 
         if len(region_clusters) > 0:
-            clusters[region_name] = region_clusters
+            clusters[region] = region_clusters
 
     return clusters
 
@@ -106,9 +101,3 @@ def delete_asg(asg, region):
     )
     log.info(f"DONE - deleted {asg['name']}")
 
-
-def get_regions():
-    # Retrieves all regions/endpoints that work with EC2
-    ec2 = boto3.client('ec2')
-    regions = ec2.describe_regions()["Regions"]
-    return regions
